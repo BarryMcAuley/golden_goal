@@ -9,10 +9,12 @@ import (
 	"github.com/BarryMcAuley/golden_goal/referee/provider/bbcsport"
 )
 
+// ServerConfig Server startup configuration data
 type ServerConfig struct {
 	RethinkHost string
 }
 
+// Server Top-level server data-structure
 type Server struct {
 	config    *ServerConfig
 	db        *Db
@@ -20,10 +22,12 @@ type Server struct {
 	exiting   bool
 }
 
+// NewServer Creates a new referee server from the given config
 func NewServer(config *ServerConfig) *Server {
 	return &Server{config: config}
 }
 
+// Initialise Initialises the server's database connection and data providers
 func (serv *Server) Initialise() error {
 	db, err := newDatabase(serv.config)
 	if err != nil {
@@ -44,9 +48,10 @@ func (serv *Server) Initialise() error {
 	return nil
 }
 
+// InitialiseProviders Initialises the server's  data providers
 func (serv *Server) InitialiseProviders() error {
 	serv.providers = []provider.Provider{
-		&bbcsport.BBCSportProvider{},
+		&bbcsport.Provider{},
 	}
 
 	for _, p := range serv.providers {
@@ -59,6 +64,7 @@ func (serv *Server) InitialiseProviders() error {
 	return nil
 }
 
+// Run Starts execution of the server's main loop
 func (serv *Server) Run() {
 	fmt.Println("Starting referee server")
 

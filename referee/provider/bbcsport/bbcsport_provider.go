@@ -5,27 +5,40 @@ import (
 	"github.com/BarryMcAuley/golden_goal/referee/provider"
 )
 
-type BBCSportProvider struct {
+// Provider BBC Sport website scrape data provider
+type Provider struct {
 	provider.BaseProvider
+	internalChan     chan *event.Event
+	newMatchProvider *NewMatchProvider
 }
 
-func (p *BBCSportProvider) Initialise() error {
-	err := p.BaseProvider.Initialise()
+// Initialise Initialises provider and starts provider main loop
+func (p *Provider) Initialise() error {
+	err := p.BaseProvider.Initialise(nil)
 	if err != nil {
 		return err
 	}
 
+	p.internalChan = make(chan *event.Event)
+
 	go p.MainLoop()
+
+	newMatchProvider := &NewMatchProvider{}
+	newMatchProvider.Initialise(p.internalChan)
+	go newMatchProvider.MainLoop()
 
 	return nil
 }
 
-func (p *BBCSportProvider) GetId() string {
+// GetID Returns the provider ID "BBCSportProvider"
+func (p *Provider) GetID() string {
 	return "BBCSportProvider"
 }
 
-func (p *BBCSportProvider) MainLoop() {
-
-	p.SendEvent(&event.Event{})
-
+// MainLoop Main provider loop
+func (p *Provider) MainLoop() {
+	for {
+		event := <-p.internalChan
+		p.SendEvent(event)
+	}
 }
