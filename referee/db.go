@@ -11,8 +11,12 @@ type Db struct {
 	rethink *rethink.Session
 }
 
-// DbName Name of RethinkDB database used globally
-const DbName = "referee"
+const (
+	// DbName Name of RethinkDB database used globally
+	DbName = "referee"
+	// TableLiveMatches Table for live match data
+	TableLiveMatches = "LiveMatches"
+)
 
 func newDatabase(config *ServerConfig) (*Db, error) {
 	db := Db{}
@@ -77,7 +81,7 @@ func (db *Db) createDatabase(dbName string) error {
 }
 
 func (db *Db) createTables() error {
-	if _, err := rethink.TableCreate("LiveMatches").RunWrite(db.rethink); err != nil {
+	if _, err := rethink.TableCreate(TableLiveMatches).RunWrite(db.rethink); err != nil {
 		return err
 	}
 
@@ -85,7 +89,7 @@ func (db *Db) createTables() error {
 }
 
 func (db *Db) hasLiveMatch(home string, away string) bool {
-	res, err := rethink.Table("LiveMatches").Filter(map[string]interface{}{
+	res, err := rethink.Table(TableLiveMatches).Filter(map[string]interface{}{
 		"HomeTeam": home,
 		"AwayTeam": away,
 	}).Run(db.rethink)
@@ -107,7 +111,7 @@ func (db *Db) hasLiveMatch(home string, away string) bool {
 }
 
 func (db *Db) addLiveMatch(match *Match) error {
-	if _, err := rethink.Table("LiveMatches").Insert(*match).RunWrite(db.rethink); err != nil {
+	if _, err := rethink.Table(TableLiveMatches).Insert(*match).RunWrite(db.rethink); err != nil {
 		return err
 	}
 
