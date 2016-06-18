@@ -1,0 +1,8 @@
+version: '2'
+services:
+    referee:
+        build: .
+        depends_on:
+            - rethink
+    rethink:
+        image: rethinkdb
