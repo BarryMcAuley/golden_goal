@@ -1,8 +1,9 @@
 package referee
 
 import (
-	"fmt"
 	"reflect"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/BarryMcAuley/golden_goal/referee/event"
 	"github.com/BarryMcAuley/golden_goal/referee/provider"
@@ -66,7 +67,7 @@ func (serv *Server) InitialiseProviders() error {
 
 // Run Starts execution of the server's main loop
 func (serv *Server) Run() {
-	fmt.Println("Starting referee server")
+	log.Info("Starting referee server")
 
 	chans := [](chan *event.Event){}
 	for _, prov := range serv.providers {
@@ -99,15 +100,26 @@ func (serv *Server) Run() {
 
 func (serv *Server) handleNewMatchEvent(event *event.Event) {
 	if serv.db.hasLiveMatch(event.EventTeamHome, event.EventTeamAway) {
-		fmt.Printf("Duplicate new match: %#v\n", *event)
+		log.WithFields(log.Fields{
+			"event": *event,
+		}).Debug("Duplicate new match")
 	} else {
 		match := newMatch(event.EventTeamHome, event.EventTeamAway)
-		fmt.Printf("New match: %#v\n", match)
+
+		log.WithFields(log.Fields{
+			"match": match,
+		}).Info("New match")
 
 		if err := serv.db.addLiveMatch(match); err != nil {
-			fmt.Printf("Failed to insert match: %s\n", err.Error())
+			log.WithFields(log.Fields{
+				"match": match,
+				"error": err.Error(),
+			}).Error("Failed to add new match to database")
 		} else {
-			fmt.Println("Added match to DB")
+			log.WithFields(log.Fields{
+				"match": match,
+			}).Debug("Failed to add new match to database")
+
 			serv.broadcastToProviders(event, []string{
 				event.EventSource,
 			})

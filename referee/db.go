@@ -1,8 +1,7 @@
 package referee
 
 import (
-	"fmt"
-
+	log "github.com/Sirupsen/logrus"
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
@@ -67,7 +66,7 @@ func (db Db) hasDatabase(dbName string) (bool, error) {
 }
 
 func (db *Db) createDatabase(dbName string) error {
-	fmt.Println("No refereee DB found, creating new database")
+	log.Info("No refereee DB found, creating new database")
 
 	if _, err := rethink.DBCreate(dbName).Run(db.rethink); err != nil {
 		return err
@@ -95,7 +94,11 @@ func (db *Db) hasLiveMatch(home string, away string) bool {
 	}).Run(db.rethink)
 
 	if err != nil {
-		fmt.Println("Failed to query db: " + err.Error())
+		log.WithFields(log.Fields{
+			"error": err.Error(),
+			"query": "hasLiveMatch",
+		}).Error("Failed to query DB")
+
 		return false
 	}
 	defer res.Close()
@@ -103,7 +106,11 @@ func (db *Db) hasLiveMatch(home string, away string) bool {
 	var matches []interface{}
 	err = res.All(&matches)
 	if err != nil {
-		fmt.Println("Failed to parse db response: " + err.Error())
+		log.WithFields(log.Fields{
+			"error": err.Error(),
+			"query": "hasLiveMatch",
+		}).Error("Failed parse DB response")
+
 		return false
 	}
 

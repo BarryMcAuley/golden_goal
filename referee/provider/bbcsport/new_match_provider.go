@@ -1,10 +1,10 @@
 package bbcsport
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/BarryMcAuley/golden_goal/referee/event"
 	"github.com/BarryMcAuley/golden_goal/referee/provider"
@@ -23,7 +23,9 @@ func (p *newMatchProvider) MainLoop() {
 				p.SendEvent(e)
 			}
 		} else {
-			fmt.Println("Error scraping BBC website: " + err.Error())
+			log.WithFields(log.Fields{
+				"error": err.Error(),
+			}).Error("Failed to scrape BBC news match list")
 		}
 
 		time.Sleep(10 * time.Second)
@@ -56,7 +58,7 @@ func (p *newMatchProvider) scrapeMatchList() ([]*event.Event, error) {
 		}
 
 		elapsed := s.Find(".elapsed-time").Text()
-		if len(elapsed) < 1 || !strings.Contains(strings.ToLower(elapsed), "mins") {
+		if len(elapsed) < 1 {
 			return
 		}
 

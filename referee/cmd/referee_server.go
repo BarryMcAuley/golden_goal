@@ -1,28 +1,36 @@
 package main
 
 import (
-    "flag"
-    "fmt"
-    "os"
+	"flag"
+	"os"
 
-    ref "github.com/BarryMcAuley/golden_goal/referee"
+	ref "github.com/BarryMcAuley/golden_goal/referee"
+	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
-    var dbHost = flag.String("dbhost", "localhost", "Host for RethinkDB server")
-    flag.Parse()
+	var dbHost = flag.String("dbhost", "localhost", "Host for RethinkDB server")
+	var logDebug = flag.Bool("debug", false, "Enables debug logging")
+	flag.Parse()
 
-    config := ref.ServerConfig{
-        RethinkHost: *dbHost,
-    }
+	if *logDebug {
+		log.SetLevel(log.DebugLevel)
+	}
 
-    server := ref.NewServer(&config)
+	config := ref.ServerConfig{
+		RethinkHost: *dbHost,
+	}
 
-    err := server.Initialise()
-    if err != nil {
-        fmt.Fprintln(os.Stderr, "Error initialising server: " + err.Error())
-        os.Exit(1)
-    }
+	server := ref.NewServer(&config)
 
-    server.Run()
+	err := server.Initialise()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err.Error(),
+		}).Fatal("Failed to initialise server")
+
+		os.Exit(1)
+	}
+
+	server.Run()
 }
