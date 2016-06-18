@@ -1,14 +1,11 @@
 package bbcsport
 
-import (
-	"github.com/BarryMcAuley/golden_goal/referee/event"
-	"github.com/BarryMcAuley/golden_goal/referee/provider"
-)
+import "github.com/BarryMcAuley/golden_goal/referee/provider"
 
 // Provider BBC Sport website scrape data provider
 type Provider struct {
 	provider.BaseProvider
-	internalChan     chan *event.Event
+	internalChan     *provider.SafeEventChannel
 	newMatchProvider *NewMatchProvider
 }
 
@@ -19,15 +16,17 @@ func (p *Provider) Initialise() error {
 		return err
 	}
 
-	p.internalChan = make(chan *event.Event)
-
+	p.internalChan = provider.NewChannel()
 	go p.MainLoop()
 
+	p.startNewMatchScraper()
+	return nil
+}
+
+func (p *Provider) startNewMatchScraper() {
 	newMatchProvider := &NewMatchProvider{}
 	newMatchProvider.Initialise(p.internalChan)
 	go newMatchProvider.MainLoop()
-
-	return nil
 }
 
 // GetID Returns the provider ID "BBCSportProvider"
@@ -38,7 +37,7 @@ func (p *Provider) GetID() string {
 // MainLoop Main provider loop
 func (p *Provider) MainLoop() {
 	for {
-		event := <-p.internalChan
+		event := p.internalChan.ReadEvent()
 		p.SendEvent(event)
 	}
 }

@@ -1,10 +1,6 @@
 package provider
 
-import (
-	"sync"
-
-	"github.com/BarryMcAuley/golden_goal/referee/event"
-)
+import "github.com/BarryMcAuley/golden_goal/referee/event"
 
 // Provider Interface for all server data-providers
 type Provider interface {
@@ -17,19 +13,16 @@ type Provider interface {
 // methods to aid in the construction of data providers. It is expected that all
 // concrete data-providers will embed this struct.
 type BaseProvider struct {
-	eventSendLock *sync.Mutex
-	eventChan     chan *event.Event
+	eventChan *SafeEventChannel
 }
 
 // Initialise Initialises common provider channels and locks
-func (p *BaseProvider) Initialise(ch chan *event.Event) error {
+func (p *BaseProvider) Initialise(ch *SafeEventChannel) error {
 	if ch == nil {
-		ch = make(chan *event.Event)
+		ch = NewChannel()
 	}
 
 	p.eventChan = ch
-	p.eventSendLock = &sync.Mutex{}
-
 	return nil
 }
 
@@ -40,17 +33,10 @@ func (p *BaseProvider) GetID() string {
 
 // GetEventChannel Returns the event channel in use by this provider
 func (p *BaseProvider) GetEventChannel() chan *event.Event {
-	return p.eventChan
+	return p.eventChan.getChannel()
 }
 
 // SendEvent Sends an event in a thread-safe manner over the event channel
 func (p *BaseProvider) SendEvent(event *event.Event) {
-	p.eventSendLock.Lock()
-
-	select {
-	case p.eventChan <- event:
-	default:
-	}
-
-	p.eventSendLock.Unlock()
+	p.eventChan.SendEvent(event)
 }
