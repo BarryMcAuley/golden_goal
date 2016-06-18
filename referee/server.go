@@ -88,6 +88,11 @@ func (serv *Server) Run() {
 			continue
 		}
 
-		fmt.Printf("Read from channel %#v: %s\n", chans[chosen], value.String())
+		matchEvent := *value.Interface().(*event.Event)
+
+		switch matchEvent.EventType {
+		case event.EventNewMatch:
+			fmt.Printf("New match reported: %s vs %s\n", matchEvent.EventTeamHome, matchEvent.EventTeamAway)
+		}
 	}
 }

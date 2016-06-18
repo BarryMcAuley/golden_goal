@@ -28,12 +28,7 @@ func (ch *SafeEventChannel) Unlock() {
 
 func (ch *SafeEventChannel) SendEvent(event *event.Event) {
 	ch.Lock()
-
-	select {
-	case ch.channel <- event:
-	default:
-	}
-
+	ch.channel <- event
 	ch.Unlock()
 }
 

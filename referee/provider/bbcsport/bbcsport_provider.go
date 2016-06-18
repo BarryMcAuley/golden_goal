@@ -6,7 +6,7 @@ import "github.com/BarryMcAuley/golden_goal/referee/provider"
 type Provider struct {
 	provider.BaseProvider
 	internalChan     *provider.SafeEventChannel
-	newMatchProvider *NewMatchProvider
+	newMatchProvider *newMatchProvider
 }
 
 // Initialise Initialises provider and starts provider main loop
@@ -24,7 +24,7 @@ func (p *Provider) Initialise() error {
 }
 
 func (p *Provider) startNewMatchScraper() {
-	newMatchProvider := &NewMatchProvider{}
+	newMatchProvider := &newMatchProvider{}
 	newMatchProvider.Initialise(p.internalChan)
 	go newMatchProvider.MainLoop()
 }
