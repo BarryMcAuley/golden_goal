@@ -67,5 +67,47 @@ func (db *Db) createDatabase(dbName string) error {
 		return err
 	}
 
+	if err := db.createTables(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Db) createTables() error {
+	if _, err := rethink.TableCreate("LiveMatches").RunWrite(db.rethink); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Db) hasLiveMatch(home string, away string) bool {
+	res, err := rethink.Table("LiveMatches").Filter(map[string]interface{}{
+		"HomeTeam": home,
+		"AwayTeam": away,
+	}).Run(db.rethink)
+
+	if err != nil {
+		fmt.Println("Failed to query db: " + err.Error())
+		return false
+	}
+	defer res.Close()
+
+	var matches []interface{}
+	err = res.All(&matches)
+	if err != nil {
+		fmt.Println("Failed to parse db response: " + err.Error())
+		return false
+	}
+
+	return len(matches) > 0
+}
+
+func (db *Db) addLiveMatch(match *Match) error {
+	if _, err := rethink.Table("LiveMatches").Insert(*match).RunWrite(db.rethink); err != nil {
+		return err
+	}
+
 	return nil
 }

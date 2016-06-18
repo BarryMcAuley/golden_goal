@@ -92,7 +92,22 @@ func (serv *Server) Run() {
 
 		switch matchEvent.EventType {
 		case event.EventNewMatch:
-			fmt.Printf("New match reported: %s vs %s\n", matchEvent.EventTeamHome, matchEvent.EventTeamAway)
+			serv.handleNewMatchEvent(&matchEvent)
+		}
+	}
+}
+
+func (serv *Server) handleNewMatchEvent(event *event.Event) {
+	if serv.db.hasLiveMatch(event.EventTeamHome, event.EventTeamAway) {
+		fmt.Printf("Duplicate new match: %#v\n", *event)
+	} else {
+		match := newMatch(event.EventTeamHome, event.EventTeamAway)
+		fmt.Printf("New match: %#v\n", match)
+
+		if err := serv.db.addLiveMatch(match); err != nil {
+			fmt.Printf("Failed to insert match: %s\n", err.Error())
+		} else {
+			fmt.Println("Added match to DB")
 		}
 	}
 }

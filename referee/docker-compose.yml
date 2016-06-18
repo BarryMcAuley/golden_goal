@@ -6,3 +6,5 @@ services:
             - rethink
     rethink:
         image: rethinkdb
+        ports:
+            - 28015
