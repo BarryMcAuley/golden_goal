@@ -6,6 +6,7 @@ const (
 
 type Event struct {
 	EventType     int
+	EventSource   string
 	EventMessage  string
 	EventTeamHome string
 	EventTeamAway string

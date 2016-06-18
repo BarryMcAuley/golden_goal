@@ -108,6 +108,31 @@ func (serv *Server) handleNewMatchEvent(event *event.Event) {
 			fmt.Printf("Failed to insert match: %s\n", err.Error())
 		} else {
 			fmt.Println("Added match to DB")
+			serv.broadcastToProviders(event, []string{
+				event.EventSource,
+			})
 		}
 	}
+}
+
+func (serv *Server) broadcastToProviders(event *event.Event, filter []string) {
+	for _, p := range serv.providers {
+		canSkip := false
+		for _, filtered := range filter {
+			if p.GetID() == filtered {
+				canSkip = true
+				break
+			}
+		}
+
+		if canSkip {
+			continue
+		}
+
+		ch := p.GetIncomingChannel()
+		if ch != nil {
+			ch.SendEvent(event)
+		}
+	}
+
 }

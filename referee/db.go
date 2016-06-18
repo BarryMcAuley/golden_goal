@@ -33,9 +33,11 @@ func (db *Db) initialiseDatabase() error {
 	if err != nil {
 		return err
 	} else if !exists {
+		db.rethink.Use(DbName)
 		db.createDatabase(DbName)
 	}
 
+	db.rethink.Use(DbName)
 	return nil
 }
 

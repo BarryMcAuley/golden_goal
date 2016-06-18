@@ -16,6 +16,7 @@ func (p *Provider) Initialise() error {
 		return err
 	}
 
+	p.BaseProvider.ID = "BBCSportProvider"
 	p.internalChan = provider.NewChannel()
 	go p.MainLoop()
 
@@ -27,11 +28,6 @@ func (p *Provider) startNewMatchScraper() {
 	newMatchProvider := &newMatchProvider{}
 	newMatchProvider.Initialise(p.internalChan)
 	go newMatchProvider.MainLoop()
-}
-
-// GetID Returns the provider ID "BBCSportProvider"
-func (p *Provider) GetID() string {
-	return "BBCSportProvider"
 }
 
 // MainLoop Main provider loop
