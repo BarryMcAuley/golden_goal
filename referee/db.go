@@ -12,11 +12,11 @@ type Db struct {
 
 const DB_NAME = "referee"
 
-func newDatabase() (*Db, error) {
+func newDatabase(config *ServerConfig) (*Db, error) {
     db := Db{}
 
     dbSession, err := rethink.Connect(rethink.ConnectOpts{
-        Address: "localhost:28015",
+        Address: config.RethinkHost + ":28015",
     })
     if err != nil {
         return nil, err
@@ -27,7 +27,6 @@ func newDatabase() (*Db, error) {
 }
 
 func (db *Db) initialiseDatabase() error {
-
     exists, err := db.hasDatabase(DB_NAME)
     if err != nil {
         return err

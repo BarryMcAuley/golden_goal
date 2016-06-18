@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
     "fmt"
     "os"
 
@@ -8,7 +9,14 @@ import (
 )
 
 func main() {
-    server := ref.NewServer()
+    var dbHost = flag.String("dbhost", "localhost", "Host for RethinkDB server")
+    flag.Parse()
+
+    config := ref.ServerConfig{
+        RethinkHost: *dbHost,
+    }
+
+    server := ref.NewServer(&config)
 
     err := server.Initialise()
     if err != nil {

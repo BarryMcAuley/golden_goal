@@ -4,16 +4,21 @@ import (
     "fmt"
 )
 
-type Server struct {
-    db  *Db
+type ServerConfig struct {
+    RethinkHost string
 }
 
-func NewServer() *Server {
-    return &Server{}
+type Server struct {
+    config  *ServerConfig
+    db      *Db
+}
+
+func NewServer(config *ServerConfig) *Server {
+    return &Server{config: config}
 }
 
 func (serv *Server) Initialise() error {
-    db, err := newDatabase()
+    db, err := newDatabase(serv.config)
     if err != nil {
         return err
     }
